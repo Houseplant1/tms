@@ -15,7 +15,10 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver import Firefox
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
-from functions import load_json, save_json
+from functions import load_json
+
+# the old messages will be saved here for comparison
+old_screenshots: dict = {}
 
 driver_options = Options()
 # make the browser headless
@@ -95,11 +98,14 @@ def get_messages(urls: dict) -> dict:
                 # save the screenshot to the dict created above
                 screenshots[url] = screenshot
                 break
-            except TimeoutException:
+            except TimeoutException as e:
+                print("[ERROR] " + str(e))
                 continue
-            except ElementClickInterceptedException:
+            except ElementClickInterceptedException as e:
+                print("[ERROR] " + str(e))
                 continue
-            except WebDriverException:
+            except WebDriverException as e:
+                print("[ERROR] " + str(e))
                 continue
     return screenshots
 
@@ -158,24 +164,20 @@ def main():
 
     # load the current messages
     data: dict = get_messages(urls)
-    # load the old messages
-    old_messages: dict = load_json("data/old_messages.json")
-    # it may or may not be that there are no messages
-    if all(value == "" for value in old_messages) or list(old_messages.values())[0] == "FNF":
-        save_json("data/old_messages.json", data)
-        print("[ERROR] occurred and handled: " + str(list(old_messages.values())[1]))
-        return
 
-    # json may error out while parsing the file
-    elif list(old_messages.values())[0] == "JLE":
-        print("[ERROR] unhandled json error: " + str(list(old_messages.values())[1]))
+    # if there is no old data, copy the current data
+    # this avoids sending unnecessary messages on first run
+    if len(old_screenshots.keys()) == 0:
+        old_screenshots.update(data)
         return
 
     # compare the data
-    changes: dict = compare(old_messages, data)
-    save_json("data/old_messages.json", data)
+    changes: dict = compare(old_screenshots, data)
     if changes:
         send_changes(changes)
+
+    # update old_screenshots
+    old_screenshots.update(data)
 
 
 if __name__ == '__main__':
@@ -188,6 +190,4 @@ if __name__ == '__main__':
             continue
     while True:
         main()
-        driver.close()
         sleep(float(getenv("REFRESH_INTERVAL")) * 60)
-        driver = Firefox(executable_path="driver/geckodriver.exe", firefox_profile=driver_profile, options=driver_options)

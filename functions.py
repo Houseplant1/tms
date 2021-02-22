@@ -35,6 +35,7 @@ def load_json(file_name: str) -> dict:
         return {"Error": "FNF", "ErrorMessage": str(e)}
 
 
+# unused
 def save_json(file_name: str, data: dict) -> Union[None, dict]:
     """
     save json data to a file
