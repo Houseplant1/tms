@@ -25,5 +25,3 @@
 
 - I may or may not update this project. I don't know.
 - Don't expect perfect or bug-free code.
-
-######Enjoy
