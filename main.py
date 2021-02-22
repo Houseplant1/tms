@@ -113,17 +113,11 @@ def get_messages(urls: dict) -> dict:
 def compare(old_data: dict, new_data: dict) -> Union[dict, None]:
     # this will hold the data that has been changed
     changes: dict = {}
-
-    o_keys = old_data.keys()
-    n_keys = new_data.keys()
-    for key in n_keys:
-        # check if the key exists in the old data
-        if key in o_keys:
-            if old_data[key] != new_data[key]:
-                changes[key] = new_data[key]
-                print(f"[DEBUG] found changes in {key}")
-        else:
-            print(f"[DEBUG] {key} was not found in old messages, don't worry, it will get added")
+    # check for changes
+    for key in new_data:
+        if new_data[key] != old_data[key]:
+            changes[key] = new_data[key]
+            print(f"[DEBUG] found changes in {key}")
     return changes
 
 
