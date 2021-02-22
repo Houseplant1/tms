@@ -141,6 +141,7 @@ def send_changes(changes: dict) -> None:
         # delete the temp img
         remove(getcwd() + "\\tmp.png")
         print("[DEBUG] sent change: " + change)
+        sleep(2)
 
 
 def main():
