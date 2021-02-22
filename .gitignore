@@ -1,0 +1,7 @@
+.env
+geckodriver.log
+driver/geckodriver.exe
+data/*
+venv
+.idea
+__pycache__
