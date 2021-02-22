@@ -88,6 +88,10 @@ def get_messages(urls: dict) -> dict:
                         driver.execute_script(
                             "var elements = document.getElementsByClassName(\"timestamp-column\");elements.item("
                             "  elements.length-1).remove();")
+                        # remove the scroll handle, it causes issues
+                        driver.execute_script(
+                            "var list = document.getElementsByClassName(\"drag-handle\");" +
+                            "for(var i=0; i < list.length; i++) {list[i].remove() }")
                         break
                     except JavascriptException:
                         continue
@@ -114,7 +118,7 @@ def compare(old_data: dict, new_data: dict) -> Union[dict, None]:
     # this will hold the data that has been changed
     changes: dict = {}
     # check for changes
-    for key in new_data:
+    for key in new_data.keys():
         if new_data[key] != old_data[key]:
             changes[key] = new_data[key]
             print(f"[DEBUG] found changes in {key}")
