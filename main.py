@@ -26,7 +26,7 @@ driver_options.add_argument("--headless")
 # it will grab the log in data from your current firefox installation
 # make sure to be logged in whatsapp and teams in firefox before starting, otherwise it will not work
 driver_profile = FirefoxProfile(getenv("FIREFOX_PROFILE"))
-driver = Firefox(executable_path="driver/geckodriver.exe", firefox_profile=driver_profile)
+driver = Firefox(executable_path="driver/geckodriver.exe", firefox_profile=driver_profile, options=driver_options)
 
 # we will need this in order to wait for elements to appear.
 # it will wait up to 120 seconds
@@ -189,4 +189,4 @@ if __name__ == '__main__':
         main()
         driver.close()
         sleep(float(getenv("REFRESH_INTERVAL")) * 60)
-        driver = Firefox(executable_path="driver/geckodriver.exe", firefox_profile=driver_profile)
+        driver = Firefox(executable_path="driver/geckodriver.exe", firefox_profile=driver_profile, options=driver_options)
