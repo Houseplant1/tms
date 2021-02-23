@@ -7,7 +7,7 @@ from typing import Union
 from base64 import decodebytes
 from time import sleep
 
-from selenium.common.exceptions import JavascriptException, TimeoutException, ElementClickInterceptedException, \
+from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException, \
     WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -20,6 +20,7 @@ from functions import load_json
 # the old messages will be saved here for comparison
 old_sources: dict = {}
 
+# we will need it like this so that we can close and reopen the browser
 driver: Union[Firefox, None] = None
 wait: Union[WebDriverWait, None] = None
 
@@ -85,26 +86,6 @@ def get_messages(urls: dict) -> (dict, dict):
             driver.get(urls[url])
             # teams may ask you if you want to download the teams app or open it in the browser
             wait.until(ec.element_to_be_clickable((By.ID, "openTeamsClientInBrowser"))).click()
-            # remove the date from the message
-            # because if the message is 1 day old, it shows yesterday + time as date
-            # if the date is older it shows a normal date
-            # this makes this script that a message is new even though it is not
-            while True:
-                # because of how shitty m$ teams is, it may be that the messages appear
-                # then disappear again, this causes the script to continue
-                # although the message is not visible anymore
-                try:
-                    driver.execute_script(
-                        "var elements = document.getElementsByClassName(\"timestamp-column\");elements.item("
-                        "  elements.length-1).remove();")
-                    # remove the scroll handle, it causes issues
-                    driver.execute_script(
-                        "var list = document.getElementsByClassName(\"drag-handle\");" +
-                        "for(var i=0; i < list.length; i++) {list[i].remove() }")
-                    print(f"[DEBUG] removed handle and time in {url}")
-                    break
-                except JavascriptException:
-                    continue
             # find the last message and make a screenshot
             # really nice selenium feature, shoutout to the devs
             screenshot: str = wait.until(
