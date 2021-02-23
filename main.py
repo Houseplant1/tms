@@ -208,4 +208,6 @@ if __name__ == '__main__':
             continue
     while True:
         main()
+        print(f"[DEBUG] finished, sleeping for {getenv('REFRESH_INTERVAL')}")
         sleep(float(getenv("REFRESH_INTERVAL")) * 60)
+
