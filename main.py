@@ -105,11 +105,17 @@ def get_messages(urls: dict) -> (dict, dict):
                 print(f"[DEBUG] screenshot made in {url}")
                 # save the screenshot to the dict created above
                 screenshots[url] = screenshot
-                source: str = wait.until(
-                    ec.presence_of_element_located(
-                        (By.XPATH,
-                         "//div[@data-scroll-pos='0']//div[@data-tid=\"messageBodyContent\"]//div"))).get_attribute(
-                    'innerText')
+                try:
+                    source: str = wait.until(
+                        ec.presence_of_element_located(
+                            (By.XPATH,
+                             "//div[@data-scroll-pos='0']//div[@data-tid=\"messageBodyContent\"]//div"))).get_attribute(
+                        'innerText')
+                except TimeoutException as e:
+                    print(
+                        f"[ERROR] timed out while trying to find innerText of {url}:\n\t{str(e)}\n\t"
+                        f"probably because there is no text in the message")
+                    break
                 print(f"[DEBUG] source of {url}: {source}")
                 sources[url] = source
                 break
