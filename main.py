@@ -199,6 +199,7 @@ def main():
 
 
 if __name__ == '__main__':
+    banner()
     while True:
         driver.get("https://teams.microsoft.com/")
         try:
