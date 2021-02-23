@@ -22,7 +22,7 @@ old_sources: dict = {}
 
 driver_options = Options()
 # make the browser headless
-# driver_options.add_argument("--headless")
+driver_options.add_argument("--headless")
 # get the firefox profile from the environment variables
 # firefox profile is your current firefox browser data
 # we will use this so that we don't have to log into whatsapp and teams everytime we start the script
