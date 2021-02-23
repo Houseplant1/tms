@@ -20,8 +20,8 @@ from functions import load_json
 # the old messages will be saved here for comparison
 old_sources: dict = {}
 
-driver = None
-wait = None
+driver: Union[Firefox, None] = None
+wait: Union[WebDriverWait, None] = None
 
 
 def initialize() -> None:
