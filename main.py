@@ -102,7 +102,7 @@ def get_messages(urls: dict) -> (dict, dict):
                 # really nice selenium feature, shoutout to the devs
                 screenshot: str = wait.until(
                     ec.presence_of_element_located((By.XPATH, "//div[@data-scroll-pos='0']"))).screenshot_as_base64
-                print("[DEBUG] screenshot made in {de}")
+                print(f"[DEBUG] screenshot made in {url}")
                 # save the screenshot to the dict created above
                 screenshots[url] = screenshot
                 source: str = wait.until(
