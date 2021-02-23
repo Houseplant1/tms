@@ -18,11 +18,11 @@ from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
 from functions import load_json
 
 # the old messages will be saved here for comparison
-old_screenshots: dict = {}
+old_sources: dict = {}
 
 driver_options = Options()
 # make the browser headless
-driver_options.add_argument("--headless")
+# driver_options.add_argument("--headless")
 # get the firefox profile from the environment variables
 # firefox profile is your current firefox browser data
 # we will use this so that we don't have to log into whatsapp and teams everytime we start the script
@@ -65,9 +65,11 @@ def banner():
     """)
 
 
-def get_messages(urls: dict) -> dict:
+def get_messages(urls: dict) -> (dict, dict):
     # we will save the screenshots here
     screenshots: dict = {}
+    # we will save the sources here for comparison
+    sources: dict = {}
     for url in urls:
         while True:
             try:
@@ -92,6 +94,7 @@ def get_messages(urls: dict) -> dict:
                         driver.execute_script(
                             "var list = document.getElementsByClassName(\"drag-handle\");" +
                             "for(var i=0; i < list.length; i++) {list[i].remove() }")
+                        print(f"[DEBUG] removed handle and time in {url}")
                         break
                     except JavascriptException:
                         continue
@@ -99,8 +102,16 @@ def get_messages(urls: dict) -> dict:
                 # really nice selenium feature, shoutout to the devs
                 screenshot: str = wait.until(
                     ec.presence_of_element_located((By.XPATH, "//div[@data-scroll-pos='0']"))).screenshot_as_base64
+                print("[DEBUG] screenshot made in {de}")
                 # save the screenshot to the dict created above
                 screenshots[url] = screenshot
+                source: str = wait.until(
+                    ec.presence_of_element_located(
+                        (By.XPATH,
+                         "//div[@data-scroll-pos='0']//div[@data-tid=\"messageBodyContent\"]//div"))).get_attribute(
+                    'innerText')
+                print(f"[DEBUG] source of {url}: {source}")
+                sources[url] = source
                 break
             except TimeoutException as e:
                 print("[ERROR] " + str(e))
@@ -111,16 +122,16 @@ def get_messages(urls: dict) -> dict:
             except WebDriverException as e:
                 print("[ERROR] " + str(e))
                 continue
-    return screenshots
+    return screenshots, sources
 
 
-def compare(old_data: dict, new_data: dict) -> Union[dict, None]:
+def compare(old_data: dict, new_data: dict) -> Union[list, None]:
     # this will hold the data that has been changed
-    changes: dict = {}
+    changes: list = []
     # check for changes
     for key in new_data.keys():
         if new_data[key] != old_data[key]:
-            changes[key] = new_data[key]
+            changes.append(key)
             print(f"[DEBUG] found changes in {key}")
     return changes
 
@@ -161,21 +172,24 @@ def main():
         return
 
     # load the current messages
-    data: dict = get_messages(urls)
+    screenshots, sources = get_messages(urls)
 
     # if there is no old data, copy the current data
     # this avoids sending unnecessary messages on first run
-    if len(old_screenshots.keys()) == 0:
-        old_screenshots.update(data)
+    if len(old_sources.keys()) == 0:
+        old_sources.update(sources)
         return
 
     # compare the data
-    changes: dict = compare(old_screenshots, data)
+    changes: list = compare(old_sources, sources)
+    screenshots_changes = {}
+    for change in changes:
+        screenshots_changes[change] = screenshots[change]
     if changes:
-        send_changes(changes)
+        send_changes(screenshots_changes)
 
-    # update old_screenshots
-    old_screenshots.update(data)
+    # update old_sources
+    old_sources.update(sources)
 
 
 if __name__ == '__main__':

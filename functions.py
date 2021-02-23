@@ -8,6 +8,7 @@ dotenv.load_dotenv()
 print("[DEBUG] loaded .env")
 print(f"\treceiver: {getenv('RECV')}")
 print(f"\tfirefox profile: {getenv('FIREFOX_PROFILE')}")
+print(f"\tsleep time: {getenv('REFRESH_INTERVAL')}")
 
 
 def load_json(file_name: str) -> dict:

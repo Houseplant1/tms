@@ -4,6 +4,7 @@
 
 - You will need following modules:
     - selenium
+    - python-dotenv
     
 - Make a urls.json file in data/
     - add the urls you want to scrap from into it
