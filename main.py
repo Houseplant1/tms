@@ -210,4 +210,7 @@ if __name__ == '__main__':
     while True:
         main()
         print(f"[DEBUG] finished, sleeping for {getenv('REFRESH_INTERVAL')}")
+        driver.close()
         sleep(float(getenv("REFRESH_INTERVAL")) * 60)
+        driver = Firefox(executable_path="driver/geckodriver.exe", firefox_profile=driver_profile,
+                         options=driver_options)
