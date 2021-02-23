@@ -20,21 +20,28 @@ from functions import load_json
 # the old messages will be saved here for comparison
 old_sources: dict = {}
 
-driver_options = Options()
-# make the browser headless
-driver_options.add_argument("--headless")
-# get the firefox profile from the environment variables
-# firefox profile is your current firefox browser data
-# we will use this so that we don't have to log into whatsapp and teams everytime we start the script
-# it will grab the log in data from your current firefox installation
-# make sure to be logged in whatsapp and teams in firefox before starting, otherwise it will not work
-driver_profile = FirefoxProfile(getenv("FIREFOX_PROFILE"))
-driver = Firefox(executable_path="driver/geckodriver.exe", firefox_profile=driver_profile, options=driver_options)
+driver = None
+wait = None
 
-# we will need this in order to wait for elements to appear.
-# it will wait up to 120 seconds
-# yes, this much time, because ms teams takes sometimes very very long to load
-wait = WebDriverWait(driver, 120)
+
+def initialize() -> None:
+    global driver
+    global wait
+    driver_options = Options()
+    # make the browser headless
+    driver_options.add_argument("--headless")
+    # get the firefox profile from the environment variables
+    # firefox profile is your current firefox browser data
+    # we will use this so that we don't have to log into whatsapp and teams everytime we start the script
+    # it will grab the log in data from your current firefox installation
+    # make sure to be logged in whatsapp and teams in firefox before starting, otherwise it will not work
+    driver_profile = FirefoxProfile(getenv("FIREFOX_PROFILE"))
+    driver = Firefox(executable_path="driver/geckodriver.exe", firefox_profile=driver_profile, options=driver_options)
+
+    # we will need this in order to wait for elements to appear.
+    # it will wait up to 120 seconds
+    # yes, this much time, because ms teams takes sometimes very very long to load
+    wait = WebDriverWait(driver, 120)
 
 
 # cool stuff here
@@ -200,6 +207,7 @@ def main():
 
 if __name__ == '__main__':
     banner()
+    initialize()
     while True:
         driver.get("https://teams.microsoft.com/")
         try:
@@ -210,7 +218,6 @@ if __name__ == '__main__':
     while True:
         main()
         print(f"[DEBUG] finished, sleeping for {getenv('REFRESH_INTERVAL')}")
-        driver.close()
+        driver.quit()
         sleep(float(getenv("REFRESH_INTERVAL")) * 60)
-        driver = Firefox(executable_path="driver/geckodriver.exe", firefox_profile=driver_profile,
-                         options=driver_options)
+        initialize()
