@@ -66,76 +66,76 @@ def banner():
 
 
 def get_messages(urls: dict) -> (dict, dict):
+    print(f"[DEBUG] urls:\n{urls}")
     # we will save the screenshots here
     screenshots: dict = {}
     # we will save the sources here for comparison
     sources: dict = {}
     for url in urls:
-        while True:
-            try:
-                print("[DEBUG] processing url: " + urls[url])
-                # visit the site
-                driver.get(urls[url])
-                # teams may ask you if you want to download the teams app or open it in the browser
-                wait.until(ec.element_to_be_clickable((By.ID, "openTeamsClientInBrowser"))).click()
-                # remove the date from the message
-                # because if the message is 1 day old, it shows yesterday + time as date
-                # if the date is older it shows a normal date
-                # this makes this script that a message is new even though it is not
-                while True:
-                    # because of how shitty m$ teams is, it may be that the messages appear
-                    # then disappear again, this causes the script to continue
-                    # although the message is not visible anymore
-                    try:
-                        driver.execute_script(
-                            "var elements = document.getElementsByClassName(\"timestamp-column\");elements.item("
-                            "  elements.length-1).remove();")
-                        # remove the scroll handle, it causes issues
-                        driver.execute_script(
-                            "var list = document.getElementsByClassName(\"drag-handle\");" +
-                            "for(var i=0; i < list.length; i++) {list[i].remove() }")
-                        print(f"[DEBUG] removed handle and time in {url}")
-                        break
-                    except JavascriptException:
-                        continue
-                # find the last message and make a screenshot
-                # really nice selenium feature, shoutout to the devs
-                screenshot: str = wait.until(
-                    ec.presence_of_element_located((By.XPATH, "//div[@data-scroll-pos='0']"))).screenshot_as_base64
-                print(f"[DEBUG] screenshot made in {url}")
-                # save the screenshot to the dict created above
-                screenshots[url] = screenshot
+        try:
+            print("[DEBUG] processing url: " + urls[url])
+            # visit the site
+            driver.get(urls[url])
+            # teams may ask you if you want to download the teams app or open it in the browser
+            wait.until(ec.element_to_be_clickable((By.ID, "openTeamsClientInBrowser"))).click()
+            # remove the date from the message
+            # because if the message is 1 day old, it shows yesterday + time as date
+            # if the date is older it shows a normal date
+            # this makes this script that a message is new even though it is not
+            while True:
+                # because of how shitty m$ teams is, it may be that the messages appear
+                # then disappear again, this causes the script to continue
+                # although the message is not visible anymore
                 try:
-                    source: str = wait.until(
-                        ec.presence_of_element_located(
-                            (By.XPATH,
-                             "//div[@data-scroll-pos='0']//div[@data-tid=\"messageBodyContent\"]//div"))).get_attribute(
-                        'innerText')
-                except TimeoutException as e:
-                    print(
-                        f"[ERROR] timed out while trying to find innerText of {url}:\n\t{str(e)}\n\t"
-                        f"probably because there is no text in the message")
+                    driver.execute_script(
+                        "var elements = document.getElementsByClassName(\"timestamp-column\");elements.item("
+                        "  elements.length-1).remove();")
+                    # remove the scroll handle, it causes issues
+                    driver.execute_script(
+                        "var list = document.getElementsByClassName(\"drag-handle\");" +
+                        "for(var i=0; i < list.length; i++) {list[i].remove() }")
+                    print(f"[DEBUG] removed handle and time in {url}")
                     break
-                print(f"[DEBUG] source of {url}: {source}")
-                sources[url] = source
-                break
+                except JavascriptException:
+                    continue
+            # find the last message and make a screenshot
+            # really nice selenium feature, shoutout to the devs
+            screenshot: str = wait.until(
+                ec.presence_of_element_located((By.XPATH, "//div[@data-scroll-pos='0']"))).screenshot_as_base64
+            print(f"[DEBUG] screenshot made in {url}")
+            # save the screenshot to the dict created above
+            screenshots[url] = screenshot
+            try:
+                source: str = wait.until(
+                    ec.presence_of_element_located(
+                        (By.XPATH,
+                         "//div[@data-scroll-pos='0']//div[@data-tid=\"messageBodyContent\"]//div"))).get_attribute(
+                    'innerText')
             except TimeoutException as e:
-                print("[ERROR] " + str(e))
-                continue
-            except ElementClickInterceptedException as e:
-                print("[ERROR] " + str(e))
-                continue
-            except WebDriverException as e:
-                print("[ERROR] " + str(e))
-                continue
+                print(
+                    f"[ERROR] timed out while trying to find innerText of {url}:\n\t{str(e)}\n\t"
+                    f"probably because there is no text in the message")
+                break
+            print(f"[DEBUG] source of {url}: {source}")
+            sources[url] = source
+        except TimeoutException as e:
+            print("[ERROR] " + str(e))
+        except ElementClickInterceptedException as e:
+            print("[ERROR] " + str(e))
+        except WebDriverException as e:
+            print("[ERROR] " + str(e))
     return screenshots, sources
 
 
 def compare(old_data: dict, new_data: dict) -> Union[list, None]:
     # this will hold the data that has been changed
     changes: list = []
+    n_keys = new_data.keys()
+    o_keys = old_data.keys()
     # check for changes
-    for key in new_data.keys():
+    for key in n_keys:
+        if key not in o_keys:
+            break
         if new_data[key] != old_data[key]:
             changes.append(key)
             print(f"[DEBUG] found changes in {key}")
@@ -202,7 +202,7 @@ if __name__ == '__main__':
     while True:
         driver.get("https://teams.microsoft.com/")
         try:
-            wait.until(ec.element_to_be_clickable((By.XPATH, "//div[@class='teams-title']")))
+            wait.until(ec.element_to_be_clickable((By.XPATH, "//button[@id='ts-waffle-button']")))
             break
         except TimeoutException:
             continue
@@ -210,4 +210,3 @@ if __name__ == '__main__':
         main()
         print(f"[DEBUG] finished, sleeping for {getenv('REFRESH_INTERVAL')}")
         sleep(float(getenv("REFRESH_INTERVAL")) * 60)
-
