@@ -191,7 +191,7 @@ def main():
     # compare the data
     changes: list = compare(old_sources, sources)
     screenshots_changes = {}
-    if changes:
+    if len(changes) != 0:
         for change in changes:
             screenshots_changes[change] = screenshots[change]
         send_changes(screenshots_changes)
