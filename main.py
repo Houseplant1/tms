@@ -203,13 +203,29 @@ def main():
 if __name__ == '__main__':
     banner()
     initialize()
+    # try to visit teams and whatsapp base url
+    # to check if the firefox path is correct or if the user is logged in
     while True:
         driver.get("https://teams.microsoft.com/")
         try:
             wait.until(ec.element_to_be_clickable((By.XPATH, "//button[@id='ts-waffle-button']")))
             break
         except TimeoutException:
-            continue
+            print(
+                "[ERROR] couldn't open ms teams, check if the firefox profile path is correct and if you are logged in")
+            driver.quit()
+            exit(-1)
+
+        driver.get("https://web.whatsapp.com/")
+        try:
+            wait.until(ec.presence_of_element_located((By.ID, "side")))
+            break
+        except TimeoutException:
+            print(
+                "[ERROR] couldn't open whatsapp, check if the firefox profile path is correct and if you are logged in")
+            driver.quit()
+            exit(-1)
+
     while True:
         main()
         print(f"[DEBUG] finished, sleeping for {getenv('REFRESH_INTERVAL')}")
