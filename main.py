@@ -19,6 +19,7 @@ from functions import load_json
 
 # the old messages will be saved here for comparison
 old_sources: dict = {}
+check_again: dict = {}
 
 # we will need it like this so that we can close and reopen the browser
 driver: Union[Firefox, None] = None
@@ -108,10 +109,15 @@ def get_messages(urls: dict) -> (dict, dict):
             sources[url] = source
         except TimeoutException as e:
             print("[ERROR] " + str(e))
+            check_again[url] = urls[url]
         except ElementClickInterceptedException as e:
             print("[ERROR] " + str(e))
+            check_again[url] = urls[url]
         except WebDriverException as e:
             print("[ERROR] " + str(e))
+            check_again[url] = urls[url]
+        if url in check_again.keys():
+            check_again.pop(url)
     return screenshots, sources
 
 
@@ -168,6 +174,14 @@ def main():
     # load the current messages
     screenshots, sources = get_messages(urls)
 
+    # reprocess urls that couldn't be processed
+    while len(check_again) != 0:
+        driver.quit()
+        initialize()
+        revisited_scr, revisited_sources = get_messages(check_again)
+        screenshots.update(revisited_scr)
+        sources.update(revisited_sources)
+
     # if there is no old data, copy the current data
     # this avoids sending unnecessary messages on first run
     if len(old_sources.keys()) == 0:
@@ -177,9 +191,9 @@ def main():
     # compare the data
     changes: list = compare(old_sources, sources)
     screenshots_changes = {}
-    for change in changes:
-        screenshots_changes[change] = screenshots[change]
     if changes:
+        for change in changes:
+            screenshots_changes[change] = screenshots[change]
         send_changes(screenshots_changes)
 
     # update old_sources
