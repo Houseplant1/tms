@@ -31,7 +31,7 @@ def initialize() -> None:
     global wait
     driver_options = Options()
     # make the browser headless
-    driver_options.add_argument("--headless")
+    # driver_options.add_argument("--headless")
     # get the firefox profile from the environment variables
     # firefox profile is your current firefox browser data
     # we will use this so that we don't have to log into whatsapp and teams everytime we start the script
@@ -164,7 +164,8 @@ def send_changes(changes: dict) -> None:
             (By.XPATH, "//input[@accept='image/*,video/mp4,video/3gpp,video/quicktime']"))).send_keys(
             getcwd() + "\\tmp.png")
         # find the send button and click
-        wait.until(ec.element_to_be_clickable((By.CSS_SELECTOR, "._3ipVb"))).click()
+        wait.until(
+            ec.presence_of_element_located((By.XPATH, "//div[@class=\"_3v5V7\"]"))).click()
         # delete the temp img
         remove(getcwd() + "\\tmp.png")
         print("[DEBUG] sent change: " + change)
