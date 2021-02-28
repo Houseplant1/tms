@@ -7,7 +7,7 @@
     - python-dotenv
   
 
-- Make a urls.json file in a folder called data
+- Make an urls.json file in a folder called data
     - add the urls you want to scrap from into it: {"topic": "url"}
   
 
