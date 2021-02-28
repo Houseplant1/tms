@@ -119,6 +119,8 @@ def get_messages(urls: dict) -> (dict, dict):
                 continue
             print(f"[DEBUG] source of {url}: {source}")
             sources[url] = source
+            if url in check_again.keys():
+                check_again.pop(url)
         except TimeoutException as e:
             print("[ERROR] " + str(e))
             check_again[url] = urls[url]
@@ -128,8 +130,6 @@ def get_messages(urls: dict) -> (dict, dict):
         except WebDriverException as e:
             print("[ERROR] " + str(e))
             check_again[url] = urls[url]
-        if url in check_again.keys():
-            check_again.pop(url)
     return screenshots, sources
 
 
