@@ -90,6 +90,10 @@ def get_messages(urls: dict) -> (dict, dict):
             # find the last message and make a screenshot
             # really nice selenium feature, shoutout to the devs
             try:
+                # workaround for this error:
+                # Exception... "Failure" nsresult: "0x80004005 (NS_ERROR_FAILURE)" location: "JS frame ::
+                # chrome://marionette/content/capture.js :: capture.canvas :: line 139" data: no
+                sleep(10)
                 screenshot: str = wait.until(
                     ec.presence_of_element_located((By.XPATH, "//div[@data-scroll-pos='0']"))).screenshot_as_base64
                 print(f"[DEBUG] screenshot made in {url}")
@@ -99,10 +103,7 @@ def get_messages(urls: dict) -> (dict, dict):
                 print(
                     f"[DEBUG] timed out while trying to find the latest post in {url}\n"
                     f"that's probably because there are no posts in this channel")
-                screenshot: str = ""
-                screenshots[url] = screenshot
-                source: str = ""
-                sources[url] = source
+                check_again[url] = urls[url]
                 continue
             try:
                 source: str = wait.until(
@@ -114,8 +115,7 @@ def get_messages(urls: dict) -> (dict, dict):
                 print(
                     f"[ERROR] timed out while trying to find innerText of {url}:\n\t{str(e)}\n\t"
                     f"probably because there is no text in the message")
-                source: str = ""
-                sources[url] = source
+                check_again[url] = urls[url]
                 continue
             print(f"[DEBUG] source of {url}: {source}")
             sources[url] = source
