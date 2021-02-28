@@ -89,11 +89,21 @@ def get_messages(urls: dict) -> (dict, dict):
             wait.until(ec.element_to_be_clickable((By.ID, "openTeamsClientInBrowser"))).click()
             # find the last message and make a screenshot
             # really nice selenium feature, shoutout to the devs
-            screenshot: str = wait.until(
-                ec.presence_of_element_located((By.XPATH, "//div[@data-scroll-pos='0']"))).screenshot_as_base64
-            print(f"[DEBUG] screenshot made in {url}")
-            # save the screenshot to the dict created above
-            screenshots[url] = screenshot
+            try:
+                screenshot: str = wait.until(
+                    ec.presence_of_element_located((By.XPATH, "//div[@data-scroll-pos='0']"))).screenshot_as_base64
+                print(f"[DEBUG] screenshot made in {url}")
+                # save the screenshot to the dict created above
+                screenshots[url] = screenshot
+            except TimeoutException:
+                print(
+                    f"[DEBUG] timed out while trying to find the latest post in {url}\n"
+                    f"that's probably because there are no posts in this channel")
+                screenshot: str = ""
+                screenshots[url] = screenshot
+                source: str = ""
+                sources[url] = source
+                continue
             try:
                 source: str = wait.until(
                     ec.presence_of_element_located(
@@ -104,7 +114,9 @@ def get_messages(urls: dict) -> (dict, dict):
                 print(
                     f"[ERROR] timed out while trying to find innerText of {url}:\n\t{str(e)}\n\t"
                     f"probably because there is no text in the message")
-                break
+                source: str = ""
+                sources[url] = source
+                continue
             print(f"[DEBUG] source of {url}: {source}")
             sources[url] = source
         except TimeoutException as e:
@@ -129,7 +141,7 @@ def compare(old_data: dict, new_data: dict) -> Union[list, None]:
     # check for changes
     for key in n_keys:
         if key not in o_keys:
-            break
+            continue
         if new_data[key] != old_data[key]:
             changes.append(key)
             print(f"[DEBUG] found changes in {key}")
