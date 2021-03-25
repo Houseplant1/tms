@@ -1,0 +1,8 @@
+.env
+env
+geckodriver.log
+src/driver/geckodriver.exe
+src/data/urls.json
+.idea
+__pycache__
+tmp.png
